@@ -1,4 +1,5 @@
-import { Breadcrumb, Button, Card, Form, Input, Select } from "antd";
+import { Breadcrumb, Button, Card, Form, Input, message, Select } from "antd";
+import axios from "axios";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -18,10 +19,44 @@ const ModifyQuestion = () => {
   const [inputTitle, setInputTitle] = useState();
   const [inputCorrect, setInputCorrect] = useState();
 
-  const onFinish = (formValue) => {
+  const onFinish = async (formValue) => {
     console.log(formValue);
     console.log("两个Select: ", selectedCategory, selectedYear);
     console.log("输入的两段文字: ", inputTitle, inputCorrect);
+    if (type === "modify") {
+      await axios
+        .post("http://192.168.31.120:8080/persona/study/updateQuestion", {
+          id: id,
+          category: selectedCategory,
+          year: selectedYear,
+          title: inputTitle,
+          correct: inputCorrect,
+        })
+        .then((response) => {
+          message.success("修改题目成功");
+          console.log(response);
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error("服务器莫得反应");
+        });
+      return;
+    }
+    await axios
+      .post("http://192.168.31.120:8080/persona/study/addQuestion", {
+        category: selectedCategory,
+        year: selectedYear,
+        title: inputTitle,
+        correct: inputCorrect,
+      })
+      .then((response) => {
+        console.log(response);
+        message.success("添加题目成功");
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("服务器莫得反应");
+      });
   };
 
   return (

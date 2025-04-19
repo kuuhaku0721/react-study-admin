@@ -1,18 +1,30 @@
 import { Card, Form, Input, Button, message } from "antd";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./index.css";
 
 const Login = () => {
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
     console.log("用户输入", values);
-    // await dispatch(fetchLogin(values));
-    // TODO 需要验证登录请求就在这写个axios.post("", {username: values.username, password: values.password}).then().catch()
-    navigate("/");
+    await axios
+      .post("http:192.168.31.120:8080/persona/login", {
+        username: values.username,
+        password: values.password,
+      })
+      .then((response) => {
+        if (response.data.code === 200) {
+          // message.success("登录成功");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    localStorage.setItem("isLoggedIn", "true");
+    navigate("/home");
     message.success("登录成功");
   };
-
-  // TODO 样式没有改，之后再说，旧的登录逻辑不管了，最后一块删
 
   return (
     <div className="login">
@@ -35,7 +47,11 @@ const Login = () => {
               },
             ]}
           >
-            <Input size="large" placeholder="请输入用户名" />
+            <Input
+              className="ant-input"
+              size="large"
+              placeholder="请输入用户名"
+            />
           </Form.Item>
           <Form.Item
             name="password"
@@ -46,10 +62,20 @@ const Login = () => {
               },
             ]}
           >
-            <Input size="large" placeholder="请输入密码" />
+            <Input
+              className="ant-input"
+              size="large"
+              placeholder="请输入密码"
+            />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" size="large" block>
+            <Button
+              className="ant-btn"
+              type="primary"
+              htmlType="submit"
+              size="large"
+              block
+            >
               登录
             </Button>
           </Form.Item>

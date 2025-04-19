@@ -7,6 +7,7 @@ import {
   AppstoreOutlined,
 } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import "./index.css";
 
 const { Header, Sider } = AntdLayout;
 
@@ -46,8 +47,6 @@ const items = [
   },
 ];
 
-// TODO 样式也暂时不管
-
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,6 +60,7 @@ const Layout = () => {
 
   const onConfirm = () => {
     console.log("用户退出");
+    localStorage.removeItem("isLoggedIn");
     navigate("/login");
   };
 
@@ -68,7 +68,7 @@ const Layout = () => {
     <AntdLayout>
       <Header>
         <div className="user-info">
-          <span className="user-name">写store中的用户名</span>
+          <span className="user-name">kuuhaku</span>
           <span className="user-logout">
             <Popconfirm
               title="是否确认退出？"

@@ -1,17 +1,55 @@
-import { Breadcrumb, Button, Card, Form, Input } from "antd";
+import { Breadcrumb, Button, Card, Form, Input, message } from "antd";
+import axios from "axios";
 import { useLocation } from "react-router-dom";
 
 const ModifyUser = () => {
   const [form] = Form.useForm();
   const location = useLocation();
   const data = location.state;
+  const userId = data ? data.id : -1;
   const type = data ? data.type : null;
   const username = data ? data.username : null;
   const sex = data ? data.sex : null;
   const phone = data ? data.phone : null;
 
-  const onFinish = (formValue) => {
+  const onFinish = async (formValue) => {
     console.log(formValue);
+    // 修改用户
+    if (type === "modify") {
+      await axios
+        .post("http://192.168.31.120:8080/persona/study/user/updateUser", {
+          id: userId,
+          username: formValue.username,
+          password: formValue.password,
+          sex: formValue.sex,
+          phone: formValue.phone,
+        })
+        .then((response) => {
+          console.log(response);
+          message.success("用户信息提交成功");
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error("服务器莫得反应");
+        });
+      return;
+    }
+    // 添加用户
+    await axios
+      .post("http://192.168.31.120:8080/persona/study/user/addUser", {
+        username: formValue.username,
+        password: formValue.password,
+        sex: formValue.sex,
+        phone: formValue.phone,
+      })
+      .then((response) => {
+        console.log(response);
+        message.success("用户信息提交成功");
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("服务器莫得反应");
+      });
   };
 
   return (
@@ -33,6 +71,16 @@ const ModifyUser = () => {
               placeholder="请输入用户名"
               style={{ width: 400 }}
               defaultValue={username}
+            />
+          </Form.Item>
+          <Form.Item
+            label="密码"
+            name="password"
+            rules={[{ required: true, message: "请输入用户名" }]}
+          >
+            <Input.Password
+              placeholder="请输入初始密码"
+              style={{ width: 400 }}
             />
           </Form.Item>
           <Form.Item

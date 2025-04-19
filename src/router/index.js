@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Layout from "../pages/Layout";
 import Home from "../pages/Home";
@@ -9,10 +9,15 @@ import ModifyQuestion from "../pages/ModifyQuestion";
 import MessageList from "../pages/MessageList";
 import ModifyMessage from "../pages/ModifyMessage";
 
+const isAuthenticated = () => {
+  console.log("本地存储的: ", localStorage.getItem("isLoggedIn"));
+  return localStorage.getItem("isLoggedIn") === "true";
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: isAuthenticated() ? <Layout /> : <Navigate to="/login" />,
     children: [
       {
         path: "/",

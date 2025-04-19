@@ -10,81 +10,15 @@ import {
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const QuestionList = () => {
   const navigate = useNavigate();
 
-  const onEditActionClick = (data) => {
-    console.log(data);
-    navigate("/ModifyQuestion", {
-      state: {
-        ...data,
-        type: "modify",
-      },
-    });
-  };
-
-  const onDeleteConfirm = (data) => {
-    console.log("将要删除的: ", data);
-  };
-
-  const columns = [
-    {
-      title: "题目id",
-      dataIndex: "id",
-      width: 50,
-    },
-    {
-      title: "年份",
-      dataIndex: "year",
-      width: 70,
-    },
-    {
-      title: "类型",
-      dataIndex: "category",
-      width: 100,
-    },
-    {
-      title: "题目",
-      dataIndex: "title",
-      width: 220,
-    },
-    {
-      title: "答案解析",
-      dataIndex: "correct",
-    },
-    {
-      title: "操作",
-      render: (data) => {
-        return (
-          <Space size="middle">
-            <Button
-              type="primary"
-              shape="circle"
-              icon={<EditOutlined />}
-              onClick={() => onEditActionClick(data)}
-            />
-            <Popconfirm
-              title="删除"
-              description="确认要删除吗?"
-              onConfirm={() => onDeleteConfirm(data)}
-              okText="确认"
-              cancelText="取消"
-            >
-              <Button
-                type="primary"
-                danger
-                shape="circle"
-                icon={<DeleteOutlined />}
-              />
-            </Popconfirm>
-          </Space>
-        );
-      },
-    },
-  ];
-
+  const [selectedCategory, setSelectedCategory] = useState(-1);
+  const [selectedYear, setSelectedYear] = useState(1970);
+  const [inputStr, setInputStr] = useState();
   const [data, setData] = useState([
     {
       id: 1,
@@ -151,23 +85,120 @@ const QuestionList = () => {
     },
   ]);
 
-  const [selectedCategory, setSelectedCategory] = useState(-1);
-  const [selectedYear, setSelectedYear] = useState(1970);
-  const [inputStr, setInputStr] = useState();
+  const fetchAllQuestions = async () => {
+    await axios
+      .get("http://192.168.31.120:8080/gurei/study/getAllQuestions")
+      .then((response) => {
+        const data = response.data.data;
+        setData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("出问题了，看一下控制台吧");
+      });
+  };
 
-  const handleSelect = () => {
+  useEffect(() => {
+    fetchAllQuestions();
+  }, [data]);
+
+  const onEditActionClick = (data) => {
+    console.log(data);
+    navigate("/ModifyQuestion", {
+      state: {
+        ...data,
+        type: "modify",
+      },
+    });
+  };
+
+  const onDeleteConfirm = async (data) => {
+    // 正确逻辑同用户页
+    console.log("将要删除的: ", data);
+    await axios
+      .post("http://192.168.31.120:8080/persona/study/deleteQuestion", {
+        id: data.id,
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    fetchAllQuestions();
+  };
+
+  const columns = [
+    {
+      title: "题目id",
+      dataIndex: "id",
+      width: 50,
+    },
+    {
+      title: "年份",
+      dataIndex: "year",
+      width: 70,
+    },
+    {
+      title: "类型",
+      dataIndex: "category",
+      width: 100,
+    },
+    {
+      title: "题目",
+      dataIndex: "title",
+      width: 220,
+    },
+    {
+      title: "答案解析",
+      dataIndex: "correct",
+    },
+    {
+      title: "操作",
+      render: (data) => {
+        return (
+          <Space size="middle">
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<EditOutlined />}
+              onClick={() => onEditActionClick(data)}
+            />
+            <Popconfirm
+              title="删除"
+              description="确认要删除吗?"
+              onConfirm={() => onDeleteConfirm(data)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button
+                type="primary"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </Space>
+        );
+      },
+    },
+  ];
+
+  const handleSelect = async () => {
     if (inputStr) {
       message.info("检测到有输入内容，优先以输入内容为准进行查找");
-      // TODO 一个axios查找一下,调用一下setData
-      setData([
-        {
-          id: 114514,
-          category: 2,
-          year: 2015,
-          title: "沃尔玛购物袋",
-          correct: "132131d5s4a56d4s5a6f4d53sa1vc53dsa41v53fdav15d3fsa4v5d",
-        },
-      ]);
+      await axios
+        .post("http://192.168.31.120:8080/persona/study/search", {
+          text: inputStr,
+        })
+        .then((response) => {
+          const data = response.data.data;
+          setData([data]);
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error("出问题了，看一下控制台吧");
+        });
       return;
     }
 
@@ -175,37 +206,18 @@ const QuestionList = () => {
       message.error("类型和年份必须同时存在");
     }
     console.log("选择的内容: ", selectedCategory, selectedYear);
-    // TODO 调用一下axios接口获取返回值，然后set一下
-    setData([
-      {
-        id: 721,
-        category: 3,
-        year: 2017,
-        title: "波粒二象性",
-        correct: "132131d5s4a56d4s5a6f4d53sa1vc53dsa41v53fdav15d3fsa4v5d",
-      },
-      {
-        id: 722,
-        category: 3,
-        year: 2017,
-        title: "波粒二象性",
-        correct: "132131d5s4a56d4s5a6f4d53sa1vc53dsa41v53fdav15d3fsa4v5d",
-      },
-      {
-        id: 723,
-        category: 3,
-        year: 2017,
-        title: "波粒二象性",
-        correct: "132131d5s4a56d4s5a6f4d53sa1vc53dsa41v53fdav15d3fsa4v5d",
-      },
-      {
-        id: 724,
-        category: 3,
-        year: 2017,
-        title: "波粒二象性",
-        correct: "132131d5s4a56d4s5a6f4d53sa1vc53dsa41v53fdav15d3fsa4v5d",
-      },
-    ]);
+    await axios
+      .get(
+        `http://192.168.31.120:8080/gurei/study/exercise/${selectedCategory}/${selectedYear}`
+      )
+      .then((response) => {
+        const data = response.data.data;
+        setData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("出问题了，看一下控制台吧");
+      });
   };
 
   return (
